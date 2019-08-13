@@ -19,6 +19,7 @@ public class UserServiceImpl implements UserService {
         if(pageNum!=null&&pageSize!=null){
             PageHelper.startPage(pageNum,pageSize);
         }
+
         List<User> list = userMapper.getPageList();
         return new PageInfo<>(list);
     }
