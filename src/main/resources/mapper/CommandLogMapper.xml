@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ajin.springdemo.mapper.CommandLogMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.ajin.springdemo.model.domain.CommandLog" id="commandLogMap">
+        <result property="id" column="id" />
+        <result property="nodeNum" column="node_num" />
+        <result property="sendCommand" column="send_command" />
+        <result property="taskTypeId" column="task_type_id" />
+        <result property="taskInfoId" column="task_info_id" />
+        <result property="bussinessCode" column="bussiness_code" />
+        <result property="data" column="data" />
+        <result property="systemCode" column="system_code" />
+        <result property="gatewayTypeId" column="gateway_type_id" />
+        <result property="gatewaySign" column="gateway_sign" />
+        <result property="venderId" column="vender_id" />
+        <result property="sendTime" column="send_time" />
+        <result property="returnTime" column="return_time" />
+        <result property="isReturn" column="is_return" />
+        <result property="returnCommand" column="return_command" />
+        <result property="taskStateCode" column="task_state_code" />
+        <result property="devTypeId" column="dev_type_id" />
+        <result property="structure" column="structure" />
+    </resultMap>
+	<select id="selectHistoryCommand" resultType="java.lang.String">
+SELECT
+	CONCAT(	sum( CASE WHEN return_time IS NOT NULL THEN 1 ELSE 0 END ),',',sum( CASE WHEN send_time IS NOT NULL THEN 1 ELSE 0 END ))
+FROM
+	t_command_log
+	</select>
+	<select id="selectTodayCommand" resultType="java.lang.String">
+		SELECT CONCAT((SELECT
+	count( 1 )
+FROM
+	t_command_log
+WHERE
+	return_time IS NOT NULL
+	AND to_days( return_time ) = to_days( now( ) )) ,',',	(SELECT
+	count( 1 )
+FROM
+	t_command_log
+WHERE
+	send_time IS NOT NULL
+	AND to_days( send_time ) = to_days( now( ) ) ))
+	</select>
+	<select id="selectTodayCommandLogs" resultType="com.ajin.springdemo.model.vo.CommandLogVo">
+		SELECT
+	node_num,
+	'上行' dataType,
+	data  dataContent,
+	return_time dataTime
+FROM
+	t_command_log
+WHERE
+	return_time IS NOT NULL
+	AND to_days( return_time ) = to_days( now( ) )
+	UNION ALL
+	SELECT
+	node_num,
+	'下行' dataType,
+	data  dataContent,
+	send_time dataTime
+FROM
+	t_command_log
+WHERE
+	send_time IS NOT NULL
+	AND to_days( send_time ) = to_days( now( ) )
+	ORDER BY dataTime desc
+	limit 100
+
+	</select>
+
+
+</mapper>
